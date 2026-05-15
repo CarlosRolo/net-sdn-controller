@@ -8,33 +8,29 @@ class ISPTopo(Topo):
     def build(self):
         info('*** Creando topologia ISP con 20 nodos\n')
 
-        # 4 switches core
         s1 = self.addSwitch('s1', dpid='0000000000000001')
         s2 = self.addSwitch('s2', dpid='0000000000000002')
         s3 = self.addSwitch('s3', dpid='0000000000000003')
         s4 = self.addSwitch('s4', dpid='0000000000000004')
 
-        # Zona 1 — 5 hosts (clientes residenciales)
+        # Todos los hosts en la misma subred 10.0.0.x
         for i in range(1, 6):
-            h = self.addHost(f'h{i}', ip=f'10.0.1.{i}/24')
+            h = self.addHost(f'h{i}', ip=f'10.0.0.{i}/24', mac=f'00:00:00:00:01:{i:02x}')
             self.addLink(h, s1)
 
-        # Zona 2 — 5 hosts (clientes empresariales)
         for i in range(6, 11):
-            h = self.addHost(f'h{i}', ip=f'10.0.2.{i-5}/24')
+            h = self.addHost(f'h{i}', ip=f'10.0.0.{i}/24', mac=f'00:00:00:00:02:{i:02x}')
             self.addLink(h, s2)
 
-        # Zona 3 — 5 hosts (servidores)
         for i in range(11, 16):
-            h = self.addHost(f'h{i}', ip=f'10.0.3.{i-10}/24')
+            h = self.addHost(f'h{i}', ip=f'10.0.0.{i}/24', mac=f'00:00:00:00:03:{i:02x}')
             self.addLink(h, s3)
 
-        # Zona 4 — 5 hosts (red de gestión)
         for i in range(16, 21):
-            h = self.addHost(f'h{i}', ip=f'10.0.4.{i-15}/24')
+            h = self.addHost(f'h{i}', ip=f'10.0.0.{i}/24', mac=f'00:00:00:00:04:{i:02x}')
             self.addLink(h, s4)
 
-        # Links entre switches (core mesh)
+        # Links entre switches
         self.addLink(s1, s2)
         self.addLink(s2, s3)
         self.addLink(s3, s4)
@@ -48,11 +44,11 @@ def run():
         topo=topo,
         controller=RemoteController('c0', ip='127.0.0.1', port=6633),
         switch=OVSSwitch,
-        autoSetMacs=True
+        autoSetMacs=False
     )
     net.start()
     info('*** Topologia ISP levantada\n')
-    info('*** 4 switches, 20 hosts, conectados a ODL en 127.0.0.1:6633\n')
+    info('*** 4 switches, 20 hosts, subred 10.0.0.0/24\n')
     CLI(net)
     net.stop()
 
